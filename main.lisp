@@ -11,6 +11,7 @@
 (defun make-empty-chess-board ()
   (make-array '(8 8)))
 
+(defstruct )
 ;;;;;;;;;;;;;
 ;; GRAPHIC ;;
 ;;;;;;;;;;;;;
@@ -20,12 +21,17 @@
 (defun repeat-character (n c)
   (concatenate 'string (make-array n :initial-element c)))
 
-(defun interleave-char (line c)
+(defun interleave-char-string (s c)
+  (coerce
+   (interleave-el (coerce s 'list) c)
+   'string))
+
+(defun interleave-el (line el)
   (if (not line)
-      (list c)
+      (list el)
       (concatenate 'list
-                   (list c (car line))
-                   (interleave-char (cdr line) c))))
+                   (list el (first line))
+                   (interleave-el (rest line) el))))
 
 (defun append-new-line (s)
   (format t "~A~%" s #\return))
@@ -37,7 +43,7 @@
   (repeat-character 10 #\-))
 
 (defun gen-middle-line (line annotation)
-  (concatenate 'string (cons annotation (interleave-char line #\|))))
+  (concatenate 'string annotation (interleave-char-string line #\|)))
 
 (defun generate-top-legends ()
   (let ((ll (loop :for x :from 1 :to 8
