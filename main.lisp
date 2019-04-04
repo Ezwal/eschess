@@ -8,10 +8,30 @@
 ;; DATA ;;
 ;;;;;;;;;;
 
+(defconstant WHITE 0)
+(defconstant BLACK 1)
+
 (defun make-empty-chess-board ()
   (make-array '(8 8)))
 
-(defstruct )
+; for the time being let's call player either 0 => white or 1 => black
+(defclass piece ()
+  ((name
+   :initarg :name
+   :initform "pawn"
+   :accessor name)
+  (color
+   :initarg :color
+   :initform 0
+   :accessor color)))
+
+(defclass pawn (piece) ())
+(defclass tower (piece) ())
+(defclass fool (piece) ())
+(defclass knight (piece) ())
+(defclass king (piece) ())
+(defclass queen (piece) ())
+
 ;;;;;;;;;;;;;
 ;; GRAPHIC ;;
 ;;;;;;;;;;;;;

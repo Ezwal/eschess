@@ -1,0 +1,29 @@
+* list of things todo
+impl choice:
+all coordinates are in the form '(x y)
+the white are at the top (i.e x=0) and the black at the bottom (x=7)
+y is the width of the board
+
+** implements for all PIECE : 
+*** TODO can-move 
+    contract : with begin coordinates + color + end coordinates 
+    => give t or nil
+*** TODO all-moves
+    contract : given coordinates + color
+    => give all possible movement coordinates
+** For KING
+*** TODO check
+    contract : given coordinates
+    => give check | check-mate or nil
+*** TODO rock
+    contract: given colors say if piece can be rocked
+    => t | nil (i.e can NOT be rocked)
+** General functions
+*** TODO is-in-bound / is-out-of-bound
+    contract: given end coordinates
+    => t | nil (oob)
+*** TODO evaluate-move
+    contract: given textual order on the form
+    <PIECE> <COLOR> <COORDINATES> move to <COORDINATES>
+    => return t | nil depending on the validity of the moves
+*** TODO draw-board
