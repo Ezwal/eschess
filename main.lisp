@@ -14,7 +14,6 @@
 (defun make-empty-chess-board ()
   (make-array '(8 8)))
 
-; for the time being let's call player either 0 => white or 1 => black
 (defclass piece ()
   ((name
    :initarg :name
@@ -31,6 +30,24 @@
 (defclass knight (piece) ())
 (defclass king (piece) ())
 (defclass queen (piece) ())
+
+(defun is-between (lower-bound upper-bound el)
+  (and
+   (>= el lower-bound)
+   (<= el upper-bound)))
+
+(defun is-in-bound (coords)
+    (every (lambda (el) (is-between 0 7 el)) coords))
+
+(defun is-oob (coords)
+  (not (is-in-bound coords)))
+
+(defun to-upper-case (c)
+  (character (format nil "~:(~a~)" c)))
+
+(defun letter-to-number (c)
+  (let ((A-value (char-code #\A)))
+    (- (char-code (to-upper-case c)) A-value)))
 
 ;;;;;;;;;;;;;
 ;; GRAPHIC ;;

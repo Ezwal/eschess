@@ -19,7 +19,8 @@ y is the width of the board
     contract: given colors say if piece can be rocked
     => t | nil (i.e can NOT be rocked)
 ** General functions
-*** TODO is-in-bound / is-out-of-bound
+*** DONE is-in-bound / is-out-of-bound
+    CLOSED: [2019-04-04 jeu. 19:27]
     contract: given end coordinates
     => t | nil (oob)
 *** TODO evaluate-move
