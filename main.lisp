@@ -15,14 +15,14 @@
   (make-array '(8 8)))
 
 (defclass piece ()
-  ((name
+  ((name)
    :initarg :name
    :initform "pawn"
    :accessor name)
   (color
    :initarg :color
    :initform 0
-   :accessor color)))
+   :accessor color))
 
 (defclass pawn (piece) ())
 (defclass tower (piece) ())
@@ -42,12 +42,21 @@
 (defun is-oob (coords)
   (not (is-in-bound coords)))
 
+
+;;;;;;;;;;;;;;;
+;; INTERFACE ;;
+;;;;;;;;;;;;;;;
+
 (defun to-upper-case (c)
   (character (format nil "~:(~a~)" c)))
 
 (defun letter-to-number (c)
   (let ((A-value (char-code #\A)))
     (- (char-code (to-upper-case c)) A-value)))
+
+(defun letter-coordinates (c)
+  (let ((num (letter-to-number c)))
+    (and (is-between 0 7 num) num)))
 
 ;;;;;;;;;;;;;
 ;; GRAPHIC ;;
