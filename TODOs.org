@@ -27,4 +27,6 @@ y is the width of the board
     contract: given textual order on the form
     <PIECE> <COLOR> <COORDINATES> move to <COORDINATES>
     => return t | nil depending on the validity of the moves
+*** DONE evaluate string coordinates 
+    CLOSED: [2019-04-05 ven. 19:48]
 *** TODO draw-board

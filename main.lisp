@@ -1,9 +1,3 @@
-; useless shit, to remove
-(defun factoriel (n)
-  (if (<= n 2)
-      n
-      (* n (factoriel (1- n)))))
-
 ;;;;;;;;;;
 ;; DATA ;;
 ;;;;;;;;;;
@@ -15,16 +9,18 @@
   (make-array '(8 8)))
 
 (defclass piece ()
-  ((name)
+  ((name
    :initarg :name
    :initform "pawn"
    :accessor name)
   (color
    :initarg :color
    :initform 0
-   :accessor color))
+   :accessor color)))
 
 (defclass pawn (piece) ())
+(defmethod can-move ((object pawn))
+  (print "TODO"))
 (defclass tower (piece) ())
 (defclass fool (piece) ())
 (defclass knight (piece) ())
@@ -57,6 +53,13 @@
 (defun letter-coordinates (c)
   (let ((num (letter-to-number c)))
     (and (is-between 0 7 num) num)))
+
+; convert string like "A6" => '(0 6)
+(defun string-to-coordinates (s)
+  (let* ((slist (coerce s 'list))
+         (x (first slist))
+         (y (second slist)))
+    (list (letter-coordinates x) (digit-char-p y))))
 
 ;;;;;;;;;;;;;
 ;; GRAPHIC ;;
