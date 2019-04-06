@@ -23,10 +23,16 @@ y is the width of the board
     CLOSED: [2019-04-04 jeu. 19:27]
     contract: given end coordinates
     => t | nil (oob)
-*** TODO evaluate-move
+*** DONE evaluate-move
+    CLOSED: [2019-04-06 sam. 18:06]
     contract: given textual order on the form
     <PIECE> <COLOR> <COORDINATES> move to <COORDINATES>
     => return t | nil depending on the validity of the moves
+*** TODO check legit move (things on path)
+    contract: given init coords and end coords and color
+    => return 1 (capturing-move) | 0 (simple-move) | nil (illegal-move)
+    according if the piece (regardless of type) can move this
+    way, i.e no ennemy OR ally piece also check if move is in bound
 *** DONE evaluate string coordinates 
     CLOSED: [2019-04-05 ven. 19:48]
 *** TODO draw-board

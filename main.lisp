@@ -2,29 +2,57 @@
 ;; DATA ;;
 ;;;;;;;;;;
 
-(defconstant WHITE 0)
-(defconstant BLACK 1)
+(defconstant WHITE 1)
+(defconstant BLACK -1)
 
 (defun make-empty-chess-board ()
   (make-array '(8 8)))
 
+;; if the board is unoccupied then the value at point would be 0
+(defun is-coords-occupied (board coords)
+  (not (= 0 (apply #'aref board coords))))
+
 (defclass piece ()
-  ((name
-   :initarg :name
-   :initform "pawn"
-   :accessor name)
-  (color
+  ((color
    :initarg :color
    :initform 0
    :accessor color)))
 
-(defclass pawn (piece) ())
-(defmethod can-move ((object pawn))
-  (print "TODO"))
+(defclass pawn (piece)
+  ((first-move
+    :initform nil
+    :accessor first-move)))
+(defmethod can-move ((object pawn) board init final)
+  (let* ((mv (movement-vector init final))
+         (type (move-type mv))
+         (dist (apply #'+ mv))
+         (is-capturing-move (is-coords-occupied final)))
+    (or
+     ;; prise-en-passant
+     (and
+      (equal type :diagonal)
+      (= dist 1)
+      is-capturing-move)
+     (and (equal type :straight)
+          ;; first move can jump 2 tiles
+          (or
+           (and (= dist 2)
+                (first-move object)
+                (and
+                 (not is-capturing-move)
+                 (not (is-coords-occupied "TODO"))))
+           ;; normal move
+           (and (= dist 1)
+                (not is-capturing-move)))))))
+
 (defclass tower (piece) ())
 (defclass fool (piece) ())
 (defclass knight (piece) ())
-(defclass king (piece) ())
+(defclass king (piece)
+  ((can-rock
+    :initform t
+    :accessor can-rock)))
+
 (defclass queen (piece) ())
 
 (defun is-between (lower-bound upper-bound el)
@@ -38,6 +66,25 @@
 (defun is-oob (coords)
   (not (is-in-bound coords)))
 
+(defun movement-vector (init-coords end-coords)
+  (mapcar #'- end-coords init-coords))
+
+;; given move vector, will return the nature of the move among :
+;; :diagonal, :straight, :composite
+(defun move-type (mv)
+  (cond ((= (abs (first mv)) (abs (second mv))) :diagonal)
+        ((remove-if-not (lambda (el) (= el 0)) mv) :straight)
+        (t :composite)))
+
+;; filter out illegal move and lookup if the move can actually be done by
+;; the piece on the board
+(defun is-move-allowed (board init-coords end-coords)
+  (if (or (is-oob init-coords)
+          (is-oob end-coords)
+          (equal init-coords end-coords))
+      nil
+      (let ((mov (movement-vector init-coords end-coords)))
+        (print "TODO"))))
 
 ;;;;;;;;;;;;;;;
 ;; INTERFACE ;;
