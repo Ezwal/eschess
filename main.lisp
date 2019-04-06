@@ -12,38 +12,67 @@
 (defun is-coords-occupied (board coords)
   (not (= 0 (apply #'aref board coords))))
 
+;; TODO : make a func that would tell if the thing is actually an ennemy piece?
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PIECE SPECIFIC LOGIC ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defclass piece ()
   ((color
-   :initarg :color
-   :initform 0
-   :accessor color)))
+    :initarg :color
+    :initform WHITE
+    :accessor color)))
 
+;; given the path, will check that actually no piece (ally OR ennemy)
+;; lie on it until the actual target of the movement return nil if impossible
+;; only to be used for diagonal or straight movement otherwise kittten dies
+(defmethod check-path ((object piece) board init final mv)
+  (let* ((time (apply #'max mv))
+        (step (mapcar (lambda (el) (/ el time)) mv)))
+    ;; TODO end with the check of the color of the final piece in order to see if it is
+    ;; a capturing move or something
+    (loop :for i :from 1 :to (1- time)
+          :collect (is-coords-occupied board
+                                       (add-vector init (multiply-vector step i))))))
+
+;; PAWN
 (defclass pawn (piece)
   ((first-move
     :initform nil
     :accessor first-move)))
+
+;; verify that the piece is actually moving forward corresponding
+;; to its color TODO : check that the direction for color is right AND second just
+(defmethod is-forward-move ((object pawn) mv)
+  (let ((pred (if (plusp (color object))
+                  'plusp 'minusp)))
+    (funcall pred (second mv))))
+
 (defmethod can-move ((object pawn) board init final)
   (let* ((mv (movement-vector init final))
          (type (move-type mv))
          (dist (apply #'+ mv))
          (is-capturing-move (is-coords-occupied final)))
-    (or
-     ;; prise-en-passant
-     (and
-      (equal type :diagonal)
-      (= dist 1)
-      is-capturing-move)
-     (and (equal type :straight)
-          ;; first move can jump 2 tiles
-          (or
-           (and (= dist 2)
-                (first-move object)
-                (and
-                 (not is-capturing-move)
-                 (not (is-coords-occupied "TODO"))))
-           ;; normal move
-           (and (= dist 1)
-                (not is-capturing-move)))))))
+    (and
+     (is-forward-move object mv)
+     (or
+      ;; prise-en-passant
+      (and
+       (equal type :diagonal)
+       (= dist 1)
+       is-capturing-move)
+      (and (equal type :straight)
+           ;; first move can jump 2 tiles
+           (or
+            (and (= dist 2)
+                 (first-move object)
+                 (and
+                  (not is-capturing-move)
+                  (not (is-coords-occupied "TODO"))))
+            ;; normal move
+            (and (= dist 1)
+                 (not is-capturing-move))))))))
 
 (defclass tower (piece) ())
 (defclass fool (piece) ())
@@ -59,15 +88,17 @@
   (and
    (>= el lower-bound)
    (<= el upper-bound)))
-
 (defun is-in-bound (coords)
-    (every (lambda (el) (is-between 0 7 el)) coords))
-
+  (every (lambda (el) (is-between 0 7 el)) coords))
 (defun is-oob (coords)
   (not (is-in-bound coords)))
 
-(defun movement-vector (init-coords end-coords)
-  (mapcar #'- end-coords init-coords))
+(defun movement-vector (init end)
+  (mapcar #'- end init))
+(defun add-vector (coords vector)
+  (mapcar #'+ coords vector))
+(defun multiply-vector (vector multiplier)
+  (mapcar (lambda (el) (* el multiplier)) vector))
 
 ;; given move vector, will return the nature of the move among :
 ;; :diagonal, :straight, :composite
