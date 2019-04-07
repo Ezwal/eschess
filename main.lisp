@@ -40,13 +40,11 @@
 ;; lie on it until the actual target of the movement return nil if impossible
 ;; only to be used for diagonal or straight movement otherwise kittten dies
 (defmethod check-path ((object piece) board init final mv)
-  (let* ((time (apply #'max mv))
-        (step (mapcar (lambda (el) (/ el time)) mv)))
-    ;; TODO end with the check of the color of the final piece in order to see if it is
-    ;; a capturing move or something
+  (let* ((time (apply #'max (mapcar #'abs mv))) ;; needs to abs as mv can negative
+         (step (divide-vector mv time)))
     (and (every #'identity (loop :for i :from 1 :to (1- time)
-          :collect (is-coords-empty board
-                                    (add-vector init (multiply-vector step i)))))
+                                 :collect (is-coords-empty board
+                                                           (add-vector init (multiply-vector step i)))))
          (if (is-coords-empty board final)
              :move
              (if (is-coords-occupied-ennemy board final (color object))
@@ -117,6 +115,8 @@
   (mapcar #'+ coords vector))
 (defun multiply-vector (vector multiplier)
   (mapcar (lambda (el) (* el multiplier)) vector))
+(defun divide-vector (vector divider)
+  (mapcar (lambda (el) (/ el divider)) vector))
 
 ;; given move vector, will return the nature of the move among :
 ;; :diagonal, :straight, :composite
