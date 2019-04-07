@@ -8,11 +8,23 @@
 (defun make-empty-chess-board ()
   (make-array '(8 8)))
 
-;; if the board is unoccupied then the value at point would be 0
-(defun is-coords-occupied (board coords)
-  (not (= 0 (apply #'aref board coords))))
+;; basic board manipulation
+(defun get-board-coords (board coords)
+  (apply #'aref board coords))
+(defun set-board-coords (board coords val)
+  (setf (apply #'aref board coords) val))
+(defun move-piece (board init final)
+  (let ((p (get-board-coords board init)))
+    (set-board-coords board init 0)
+    (set-board-coords board final p)))
 
-;; TODO : make a func that would tell if the thing is actually an ennemy piece?
+;; basic piece verification
+(defun is-coords-empty (board coords)
+  (= 0 (get-board-coords board coords)))
+(defun is-coords-occupied (board coords)
+  (not (is-coords-empty board coords)))
+(defun is-coords-occupied-ennemy (board coords color)
+  (not (= (color (get-board-coords board coords)) color)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PIECE SPECIFIC LOGIC ;;
@@ -32,9 +44,14 @@
         (step (mapcar (lambda (el) (/ el time)) mv)))
     ;; TODO end with the check of the color of the final piece in order to see if it is
     ;; a capturing move or something
-    (loop :for i :from 1 :to (1- time)
-          :collect (is-coords-occupied board
-                                       (add-vector init (multiply-vector step i))))))
+    (and (every #'identity (loop :for i :from 1 :to (1- time)
+          :collect (is-coords-empty board
+                                    (add-vector init (multiply-vector step i)))))
+         (if (is-coords-empty board final)
+             :move
+             (if (is-coords-occupied-ennemy board final (color object))
+                 :capture
+                 nil)))))
 
 ;; PAWN
 (defclass pawn (piece)
@@ -53,8 +70,9 @@
   (let* ((mv (movement-vector init final))
          (type (move-type mv))
          (dist (apply #'+ mv))
-         (is-capturing-move (is-coords-occupied final)))
+         (is-capturing-move (is-coords-occupied-ennemy board final (color object))))
     (and
+     ;; a pawn can ONLY move forward
      (is-forward-move object mv)
      (or
       ;; prise-en-passant
@@ -69,7 +87,7 @@
                  (first-move object)
                  (and
                   (not is-capturing-move)
-                  (not (is-coords-occupied "TODO"))))
+                  (is-coords-empty "TODO")))
             ;; normal move
             (and (= dist 1)
                  (not is-capturing-move))))))))
@@ -183,4 +201,5 @@
 (defun print-chess-board (board)
   (print "TODO"))
 
-(defun main () (print "TODO"))
+(defun main ()
+  (print "TODO"))
