@@ -49,6 +49,7 @@
              :move
              (if (is-coords-occupied-ennemy board final (color object))
                  :capture
+                 ;; in this case a piece is here, not ennemy => illegal move
                  nil)))))
 
 ;; PAWN
@@ -57,8 +58,7 @@
     :initform nil
     :accessor first-move)))
 
-;; verify that the piece is actually moving forward corresponding
-;; to its color TODO : check that the direction for color is right AND second just
+;; verify that the piece is actually moving forward corresponding to its color
 (defmethod is-forward-move ((object pawn) mv)
   (let ((pred (if (plusp (color object))
                   'plusp 'minusp)))
@@ -68,24 +68,25 @@
   (let ((mv (movement-vector init final)
          (mv-type (move-type mv))
          (dist (apply #'+ mv))
-         (mv-char (check-path object board init final mv))))
-    (and
-     ;; a pawn can ONLY move forward
-     (is-forward-move object mv)
-     (or
-      ;; prise-en-passant
-      (and
-       (equal mv-type :diagonal)
-       (= dist 1)
-       (equal mv-char :capture))
+         (mv-charac (check-path object board init final mv))))
+    ;; a pawn can ONLY move forward
+    (and (is-forward-move object mv)
+         ;; prise-en-passant
+     (or (and (equal mv-type :diagonal)
+           (= dist 1)
+           (equal mv-charac :capture))
       (and (equal mv-type :straight)
-           (equal mv-char :move)
-           ;; first move can jump 2 tiles
-           (or
-            (and (= dist 2)
-                 (first-move object))
-            ;; normal move
-            (= dist 1)))))))
+           (equal mv-charac :move)
+       ;; first move can jump 2 tiles
+       (or (and (= dist 2)
+                (first-move object))
+        ;; normal move
+           (= dist 1)))))))
+
+(defmethod move :before ((object pawn) board init final)
+  (if (can-move object board init final)
+      (progn (setf (first-move object) nil)
+             (move-piece board init final))))
 
 (defclass tower (piece) ())
 (defclass fool (piece) ())
@@ -98,9 +99,8 @@
 (defclass queen (piece) ())
 
 (defun is-between (lower-bound upper-bound el)
-  (and
-   (>= el lower-bound)
-   (<= el upper-bound)))
+  (and (>= el lower-bound)
+       (<= el upper-bound)))
 (defun is-in-bound (coords)
   (every (lambda (el) (is-between 0 7 el)) coords))
 (defun is-oob (coords)
@@ -164,9 +164,8 @@
   (concatenate 'string (make-array n :initial-element c)))
 
 (defun interleave-char-string (s c)
-  (coerce
-   (interleave-el (coerce s 'list) c)
-   'string))
+  (coerce (interleave-el (coerce s 'list) c)
+          'string))
 
 (defun interleave-el (line el)
   (if (not line)
