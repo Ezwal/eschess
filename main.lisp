@@ -34,7 +34,10 @@
   ((color
     :initarg :color
     :initform WHITE
-    :accessor color)))
+    :accessor color)
+   (first-move
+    :initform t
+    :accessor first-move)))
 
 ;; given the path, will check that actually no piece (ally OR ennemy)
 ;; lie on it until the actual target of the movement return nil if impossible
@@ -52,11 +55,8 @@
                  ;; in this case a piece is here, not ennemy => illegal move
                  nil)))))
 
-;; PAWN
-(defclass pawn (piece)
-  ((first-move
-    :initform nil
-    :accessor first-move)))
+;; PAWN BEGIN
+(defclass pawn (piece) ())
 
 ;; verify that the piece is actually moving forward corresponding to its color
 (defmethod is-forward-move ((object pawn) mv)
@@ -65,7 +65,7 @@
     (funcall pred (second mv))))
 
 (defmethod can-move ((object pawn) board init final)
-  (let ((mv (movement-vector init final)
+  (let* ((mv (movement-vector init final)
          (mv-type (move-type mv))
          (dist (apply #'+ mv))
          (mv-charac (check-path object board init final mv))))
@@ -83,20 +83,64 @@
         ;; normal move
            (= dist 1)))))))
 
-(defmethod move :before ((object pawn) board init final)
+;; TODO override the move method for all piece type instance
+(defmethod move ((object pawn) board init final)
   (if (can-move object board init final)
       (progn (setf (first-move object) nil)
              (move-piece board init final))))
+;; PAWN END
 
+;; TOWER BEGIN
 (defclass tower (piece) ())
-(defclass fool (piece) ())
-(defclass knight (piece) ())
-(defclass king (piece)
-  ((can-rock
-    :initform t
-    :accessor can-rock)))
+(defmethod can-move ((object tower) board init final)
+  (let* ((mv (movement-vector init final))
+         (mv-type (move-type mv)))
+    (and (equal mv-type :straight)
+         (check-path object board inint final mv))))
+;; TOWER END
 
+;; FOOL BEGIN
+(defclass fool (piece) ())
+(defmethod can-move ((object fool) board init final)
+  (let* ((mv (movement-vector init final))
+         (mv-type (move-type mv)))
+    (and (equal mv-type :diagonal)
+         (check-path object board inint final mv))))
+;; FOOL END
+
+;; KNIGHT BEGIN
+(defclass knight (piece) ())
+(defmethod can-move ((object knight) board init final)
+  (let* ((mv (movement-vector init final))
+         (mv-type (move-type mv)))
+    (and (equal mv-type :composite)
+         ("TODO check that final contains nothing OR contains ennemy piece"))))
+;; KNIGHT END
+
+;; KING BEGIN
+(defclass king (piece) ())
+(defmethod can-move ((object king) board init final)
+  (let* ((mv (movement-vector init final))
+         (dist (apply #'+ mv))
+         (mv-type (move-type mv)))
+    (and (= dist 1)
+         (or (equal mv-type :straight)
+             (equal mv-type :diagonal))
+         ("check that it goes NOT on check")
+         (check-path object board inint final mv))))
+;; KING END
+
+;; QUEEN BEGIN
 (defclass queen (piece) ())
+(defmethod can-move ((object queen) board init final)
+  (let* ((mv (movement-vector init final))
+         (dist (apply #'+ mv))
+         (mv-type (move-type mv)))
+    (and (or (equal mv-type :straight)
+             (equal mv-type :diagonal))
+         ("check that it goes NOT on check")
+         (check-path object board inint final mv))))
+;; QUEEN END
 
 (defun is-between (lower-bound upper-bound el)
   (and (>= el lower-bound)
@@ -111,7 +155,7 @@
 (defun add-vector (coords vector)
   (mapcar #'+ coords vector))
 (defun multiply-vector (vector multiplier)
-  (mapcar (lambda (el) ( el multiplier)) vector))
+  (mapcar (lambda (el) (* el multiplier)) vector))
 (defun divide-vector (vector divider)
   (mapcar (lambda (el) (/ el divider)) vector))
 
@@ -124,13 +168,12 @@
 
 ;; filter out illegal move and lookup if the move can actually be done by
 ;; the piece on the board
-(defun is-move-allowed (board init-coords end-coords)
+(defun move-if-allowed (board init-coords end-coords)
   (if (or (is-oob init-coords)
           (is-oob end-coords)
           (equal init-coords end-coords))
       nil
-      (let ((mov (movement-vector init-coords end-coords)))
-        (print "TODO"))))
+      ("TODO get the piece and invoke move from it given the right arguments")))
 
 ;;;;;;;;;;;;;;;
 ;; INTERFACE ;;
