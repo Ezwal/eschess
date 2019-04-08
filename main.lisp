@@ -55,7 +55,13 @@
                  ;; in this case a piece is here, not ennemy => illegal move
                  nil)))))
 
-;; PAWN BEGIN
+(defmethod can-move ((object piece)) (error "should have been overriden"))
+(defmethod move ((object piece) board init final)
+  (if (can-move object board init final)
+      (progn (setf (first-move object) nil)
+             (move-piece board init final))
+      (error "can not move yooo")))
+
 (defclass pawn (piece) ())
 
 ;; verify that the piece is actually moving forward corresponding to its color
@@ -83,42 +89,29 @@
         ;; normal move
            (= dist 1)))))))
 
-;; TODO override the move method for all piece type instance
-(defmethod move ((object pawn) board init final)
-  (if (can-move object board init final)
-      (progn (setf (first-move object) nil)
-             (move-piece board init final))))
-;; PAWN END
-
-;; TOWER BEGIN
 (defclass tower (piece) ())
 (defmethod can-move ((object tower) board init final)
   (let* ((mv (movement-vector init final))
          (mv-type (move-type mv)))
     (and (equal mv-type :straight)
          (check-path object board inint final mv))))
-;; TOWER END
 
-;; FOOL BEGIN
 (defclass fool (piece) ())
 (defmethod can-move ((object fool) board init final)
   (let* ((mv (movement-vector init final))
          (mv-type (move-type mv)))
     (and (equal mv-type :diagonal)
          (check-path object board inint final mv))))
-;; FOOL END
 
-;; KNIGHT BEGIN
 (defclass knight (piece) ())
 (defmethod can-move ((object knight) board init final)
   (let* ((mv (movement-vector init final))
          (mv-type (move-type mv)))
     (and (equal mv-type :composite)
          ("TODO check that final contains nothing OR contains ennemy piece"))))
-;; KNIGHT END
 
-;; KING BEGIN
 (defclass king (piece) ())
+;; TODO :before move method to check that it does NOT lead to a check mate condition
 (defmethod can-move ((object king) board init final)
   (let* ((mv (movement-vector init final))
          (dist (apply #'+ mv))
@@ -128,9 +121,7 @@
              (equal mv-type :diagonal))
          ("check that it goes NOT on check")
          (check-path object board inint final mv))))
-;; KING END
 
-;; QUEEN BEGIN
 (defclass queen (piece) ())
 (defmethod can-move ((object queen) board init final)
   (let* ((mv (movement-vector init final))
@@ -140,7 +131,6 @@
              (equal mv-type :diagonal))
          ("check that it goes NOT on check")
          (check-path object board inint final mv))))
-;; QUEEN END
 
 (defun is-between (lower-bound upper-bound el)
   (and (>= el lower-bound)
