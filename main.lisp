@@ -65,30 +65,27 @@
     (funcall pred (second mv))))
 
 (defmethod can-move ((object pawn) board init final)
-  (let* ((mv (movement-vector init final))
-         (type (move-type mv))
+  (let ((mv (movement-vector init final)
+         (mv-type (move-type mv))
          (dist (apply #'+ mv))
-         (is-capturing-move (is-coords-occupied-ennemy board final (color object))))
+         (mv-char (check-path object board init final mv))))
     (and
      ;; a pawn can ONLY move forward
      (is-forward-move object mv)
      (or
       ;; prise-en-passant
       (and
-       (equal type :diagonal)
+       (equal mv-type :diagonal)
        (= dist 1)
-       is-capturing-move)
-      (and (equal type :straight)
+       (equal mv-char :capture))
+      (and (equal mv-type :straight)
+           (equal mv-char :move)
            ;; first move can jump 2 tiles
            (or
             (and (= dist 2)
-                 (first-move object)
-                 (and
-                  (not is-capturing-move)
-                  (is-coords-empty "TODO")))
+                 (first-move object))
             ;; normal move
-            (and (= dist 1)
-                 (not is-capturing-move))))))))
+            (= dist 1)))))))
 
 (defclass tower (piece) ())
 (defclass fool (piece) ())
@@ -114,7 +111,7 @@
 (defun add-vector (coords vector)
   (mapcar #'+ coords vector))
 (defun multiply-vector (vector multiplier)
-  (mapcar (lambda (el) (* el multiplier)) vector))
+  (mapcar (lambda (el) ( el multiplier)) vector))
 (defun divide-vector (vector divider)
   (mapcar (lambda (el) (/ el divider)) vector))
 
