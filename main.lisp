@@ -8,6 +8,12 @@
 (defun make-empty-chess-board ()
   (make-array '(8 8)))
 
+(defun instance-pieces (plist color)
+  (loop :for p :in plist :collect (make-instance p :color color)))
+
+(defun first-white-line (l) (instance-pieces '(tower knight fool king queen fool knight tower) WHITE))
+(defun second-white-line (l) (instance-pieces '(tower knight fool king queen fool knight tower) WHITE))
+
 ;; basic board manipulation
 (defun get-board-coords (board coords)
   (apply #'aref board coords))
