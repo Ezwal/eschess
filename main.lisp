@@ -8,10 +8,14 @@
 (defun make-empty-chess-board ()
   (make-array '(8 8)))
 
+(defun repeat (nb el)
+  (loop :for i :from 1 :to nb :collect el))
+
+;; given symbol list, will return a list of instance according to color
 (defun instance-pieces (plist color)
   (loop :for p :in plist :collect (make-instance p :color color)))
 
-(defun make-pawn-line (color) (instance-pieces (make-array 8 :initial-element 'pawn) color))
+(defun make-pawn-line (color) (instance-pieces (repeat 8 'pawn) color))
 (defun make-spec-line (color) (instance-pieces '(tower knight fool queen king fool knight tower) color))
 
 ;; basic board manipulation
@@ -164,7 +168,7 @@
         (t :composite)))
 
 ;; filter out illegal move and lookup if the move can actually be done by
-;; the piece on the board
+;; the piece on the board TODO : add detection of who move at the turn
 (defun move-if-allowed (board init-coords end-coords)
   (if (or (is-oob init-coords)
           (is-oob end-coords)
@@ -201,7 +205,7 @@
 ;; Helpers
 
 (defun repeat-character (n c)
-  (concatenate 'string (make-array n :initial-element c)))
+  (concatenate 'string (repeat n c)))
 
 (defun interleave-char-string (s c)
   (coerce (interleave-el (coerce s 'list) c)
