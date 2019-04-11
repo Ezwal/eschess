@@ -11,8 +11,8 @@
 (defun instance-pieces (plist color)
   (loop :for p :in plist :collect (make-instance p :color color)))
 
-(defun first-white-line (l) (instance-pieces '(tower knight fool king queen fool knight tower) WHITE))
-(defun second-white-line (l) (instance-pieces '(tower knight fool king queen fool knight tower) WHITE))
+(defun make-pawn-line (color) (instance-pieces (make-array 8 :initial-element 'pawn) color))
+(defun make-spec-line (color) (instance-pieces '(tower knight fool queen king fool knight tower) color))
 
 ;; basic board manipulation
 (defun get-board-coords (board coords)
@@ -77,10 +77,10 @@
     (funcall pred (second mv))))
 
 (defmethod can-move ((object pawn) board init final)
-  (let* ((mv (movement-vector init final)
+  (let* ((mv (movement-vector init final))
          (mv-type (move-type mv))
          (dist (apply #'+ mv))
-         (mv-charac (check-path object board init final mv))))
+         (mv-charac (check-path object board init final mv)))
     ;; a pawn can ONLY move forward
     (and (is-forward-move object mv)
          ;; prise-en-passant
@@ -96,6 +96,7 @@
            (= dist 1)))))))
 
 (defclass tower (piece) ())
+
 (defmethod can-move ((object tower) board init final)
   (let* ((mv (movement-vector init final))
          (mv-type (move-type mv)))
