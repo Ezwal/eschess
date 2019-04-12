@@ -6,7 +6,12 @@
 (defconstant BLACK -1)
 
 (defun make-empty-chess-board ()
-  (make-array '(8 8)))
+  (let ((s-w (make-spec-line WHITE))
+        (p-w (make-pawn-line WHITE))
+        (s-b (make-spec-line BLACK))
+        (p-b (make-pawn-line BLACK))
+        (empty (repeat 8 0)))
+    (make-array '(8 8) :adjustable t :initial-contents (list s-w p-w empty empty empty empty p-b s-b))))
 
 (defun repeat (nb el)
   (loop :for i :from 1 :to nb :collect el))
@@ -48,6 +53,7 @@
    (first-move
     :initform t
     :accessor first-move)))
+;; TODO define func to print debug and print gui mode
 
 ;; given the path, will check that actually no piece (ally OR ennemy)
 ;; lie on it until the actual target of the movement return nil if impossible
