@@ -4,6 +4,7 @@
 
 (defconstant WHITE 1)
 (defconstant BLACK -1)
+(defun color-to-string (c) (if (= c WHITE) "white" "black"))
 
 (defun make-empty-chess-board ()
   (let ((s-w (make-spec-line WHITE))
@@ -11,7 +12,7 @@
         (s-b (make-spec-line BLACK))
         (p-b (make-pawn-line BLACK))
         (empty (repeat 8 0)))
-    (make-array '(8 8) :adjustable t :initial-contents (list s-w p-w empty empty empty empty p-b s-b))))
+    (make-array '(8 8) :initial-contents (list s-w p-w empty empty empty empty p-b s-b))))
 
 (defun repeat (nb el)
   (loop :for i :from 1 :to nb :collect el))
@@ -45,6 +46,9 @@
 ;; PIECE SPECIFIC LOGIC ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO look
+;; piece specific unicode : https://en.wikipedia.org/wiki/Chess_symbols_in_Unicode
+
 (defclass piece ()
   ((color
     :initarg :color
@@ -52,8 +56,16 @@
     :accessor color)
    (first-move
     :initform t
-    :accessor first-move)))
-;; TODO define func to print debug and print gui mode
+    :accessor first-move)
+   (char-repr
+    :initform #\?
+    :accessor char-repr)))
+
+(defmethod print-object ((object piece) stream)
+    (with-accessors ((color color))
+        object
+      (format stream "~a" (color-to-string color))))
+;; TODO find a char to print it like its hot
 
 ;; given the path, will check that actually no piece (ally OR ennemy)
 ;; lie on it until the actual target of the movement return nil if impossible
@@ -71,7 +83,6 @@
                  ;; in this case a piece is here, not ennemy => illegal move
                  nil)))))
 
-(defmethod can-move ((object piece)) (error "should have been overriden"))
 (defmethod move ((object piece) board init final)
   (if (can-move object board init final)
       (progn (setf (first-move object) nil)
