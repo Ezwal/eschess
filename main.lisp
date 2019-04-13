@@ -46,9 +46,6 @@
 ;; PIECE SPECIFIC LOGIC ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO look
-;; piece specific unicode : https://en.wikipedia.org/wiki/Chess_symbols_in_Unicode
-
 (defclass piece ()
   ((color
     :initarg :color
@@ -58,14 +55,14 @@
     :initform t
     :accessor first-move)
    (char-repr
-    :initform #\?
+    :initform (pairlis '(WHITE BLACK) '(#\? #\?))
     :accessor char-repr)))
 
 (defmethod print-object ((object piece) stream)
-    (with-accessors ((color color))
+  (with-accessors ((color color)
+                   (char-repr char-repr))
         object
-      (format stream "~a" (color-to-string color))))
-;; TODO find a char to print it like its hot
+      (format stream "~a" (rest (assoc color char-repr)))))
 
 ;; given the path, will check that actually no piece (ally OR ennemy)
 ;; lie on it until the actual target of the movement return nil if impossible
@@ -89,7 +86,10 @@
              (move-piece board init final))
       (error "can not move yooo")))
 
-(defclass pawn (piece) ())
+(defclass pawn (piece)
+  ((char-repr
+    :initform (pairlis (list WHITE BLACK) '(#\♙ #\♟))
+    :accessor char-repr)))
 
 ;; verify that the piece is actually moving forward corresponding to its color
 (defmethod is-forward-move ((object pawn) mv)
@@ -116,7 +116,10 @@
         ;; normal move
            (= dist 1)))))))
 
-(defclass tower (piece) ())
+(defclass tower (piece)
+  ((char-repr
+    :initform (pairlis (list WHITE BLACK) '(#\♖ #\♜))
+    :accessor char-repr)))
 
 (defmethod can-move ((object tower) board init final)
   (let* ((mv (movement-vector init final))
@@ -124,21 +127,33 @@
     (and (equal mv-type :straight)
          (check-path object board inint final mv))))
 
-(defclass fool (piece) ())
+(defclass fool (piece)
+  ((char-repr
+    :initform (pairlis (list WHITE BLACK) '(#\♗ #\♝))
+    :accessor char-repr)))
+
 (defmethod can-move ((object fool) board init final)
   (let* ((mv (movement-vector init final))
          (mv-type (move-type mv)))
     (and (equal mv-type :diagonal)
          (check-path object board inint final mv))))
 
-(defclass knight (piece) ())
+(defclass knight (piece)
+  ((char-repr
+    :initform (pairlis (list WHITE BLACK) '(#\♘ #\♞))
+    :accessor char-repr)))
+
 (defmethod can-move ((object knight) board init final)
   (let* ((mv (movement-vector init final))
          (mv-type (move-type mv)))
     (and (equal mv-type :composite)
          ("TODO check that final contains nothing OR contains ennemy piece"))))
 
-(defclass king (piece) ())
+(defclass king (piece)
+  ((char-repr
+    :initform (pairlis (list WHITE BLACK) '(#\♔ #\♚))
+    :accessor char-repr)))
+
 ;; TODO :before move method to check that it does NOT lead to a check mate condition
 (defmethod can-move ((object king) board init final)
   (let* ((mv (movement-vector init final))
@@ -150,7 +165,11 @@
          ("check that it goes NOT on check")
          (check-path object board inint final mv))))
 
-(defclass queen (piece) ())
+(defclass queen (piece)
+  ((char-repr
+    :initform (pairlis (list WHITE BLACK) '(#\♕ #\♛))
+    :accessor char-repr)))
+
 (defmethod can-move ((object queen) board init final)
   (let* ((mv (movement-vector init final))
          (dist (apply #'+ mv))
