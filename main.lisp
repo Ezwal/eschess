@@ -4,6 +4,8 @@
 
 (defconstant WHITE 1)
 (defconstant BLACK -1)
+(defconstant EMPTY " ")
+
 (defun color-to-string (c) (if (= c WHITE) "white" "black"))
 
 (defun make-empty-chess-board ()
@@ -11,8 +13,8 @@
         (p-w (make-pawn-line WHITE))
         (s-b (make-spec-line BLACK))
         (p-b (make-pawn-line BLACK))
-        (empty (repeat 8 0)))
-    (make-array '(8 8) :initial-contents (list s-w p-w empty empty empty empty p-b s-b))))
+        (empty-line (repeat 8 EMPTY)))
+    (make-array '(8 8) :initial-contents (list s-b p-b empty-line empty-line empty-line empty-line p-w s-w))))
 
 (defun repeat (nb el)
   (loop :for i :from 1 :to nb :collect el))
@@ -31,12 +33,13 @@
   (setf (apply #'aref board coords) val))
 (defun move-piece (board init final)
   (let ((p (get-board-coords board init)))
-    (set-board-coords board init 0)
-    (set-board-coords board final p)))
+    (set-board-coords board init EMPTY)
+    (set-board-coords board final p)
+    board))
 
 ;; basic piece verification
 (defun is-coords-empty (board coords)
-  (= 0 (get-board-coords board coords)))
+  (= EMPTY (get-board-coords board coords)))
 (defun is-coords-occupied (board coords)
   (not (is-coords-empty board coords)))
 (defun is-coords-occupied-ennemy (board coords color)
