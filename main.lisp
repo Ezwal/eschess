@@ -108,16 +108,16 @@
     ;; a pawn can ONLY move forward
     (and (is-forward-move object mv)
          ;; prise-en-passant
-     (or (and (equal mv-type :diagonal)
-           (= dist 1)
-           (equal mv-charac :capture))
-      (and (equal mv-type :straight)
-           (equal mv-charac :move)
-       ;; first move can jump 2 tiles
-       (or (and (= dist 2)
-                (first-move object))
-        ;; normal move
-           (= dist 1)))))))
+         (or (and (equal mv-type :diagonal)
+                  (= dist 1)
+                  (equal mv-charac :capture))
+             (and (equal mv-type :straight)
+                  (equal mv-charac :move)
+                  ;; first move can jump 2 tiles
+                  (or (and (= dist 2)
+                           (first-move object))
+                      ;; normal move
+                      (= dist 1)))))))
 
 (defclass tower (piece)
   ((char-repr
@@ -160,6 +160,7 @@
 ;; TODO :before move method to check that it does NOT lead to a check mate condition
 (defmethod can-move ((object king) board init final)
   (let* ((mv (movement-vector init final))
+         ;; TODO use the abs value of vector 'cos otherwise it doesn't work at all
          (dist (apply #'+ mv))
          (mv-type (move-type mv)))
     (and (= dist 1)
@@ -175,8 +176,9 @@
 
 (defmethod can-move ((object queen) board init final)
   (let* ((mv (movement-vector init final))
-         (dist (apply #'+ mv))
-         (mv-type (move-type mv)))
+         (abs-mv (abs-vector mv))
+         (dist (apply #'+ abs-mv))
+         (mv-type (move-type abs-mv)))
     (and (or (equal mv-type :straight)
              (equal mv-type :diagonal))
          ("check that it goes NOT on check")
@@ -190,6 +192,7 @@
 (defun is-oob (coords)
   (not (is-in-bound coords)))
 
+;; Vector arithmetic
 (defun movement-vector (init end)
   (mapcar #'- end init))
 (defun add-vector (coords vector)
@@ -198,6 +201,8 @@
   (mapcar (lambda (el) (* el multiplier)) vector))
 (defun divide-vector (vector divider)
   (mapcar (lambda (el) (/ el divider)) vector))
+(defun abs-vector (el)
+  (mapcar #'abs el))
 
 ;; given move vector, will return the nature of the move among :
 ;; :diagonal, :straight, :composite
