@@ -87,7 +87,7 @@
   (if (can-move object board init final)
       (progn (setf (first-move object) nil)
              (move-piece board init final))
-      (error "can not move yooo")))
+      (error "can not move")))
 
 (defclass pawn (piece)
   ((char-repr
@@ -128,7 +128,7 @@
   (let* ((mv (movement-vector init final))
          (mv-type (move-type mv)))
     (and (equal mv-type :straight)
-         (check-path object board inint final mv))))
+         (check-path object board init final mv))))
 
 (defclass fool (piece)
   ((char-repr
@@ -137,9 +137,10 @@
 
 (defmethod can-move ((object fool) board init final)
   (let* ((mv (movement-vector init final))
-         (mv-type (move-type mv)))
+         (abs-mv (abs-vector mv))
+         (mv-type (move-type abs-mv)))
     (and (equal mv-type :diagonal)
-         (check-path object board inint final mv))))
+         (check-path object board init final mv))))
 
 (defclass knight (piece)
   ((char-repr
@@ -148,9 +149,11 @@
 
 (defmethod can-move ((object knight) board init final)
   (let* ((mv (movement-vector init final))
-         (mv-type (move-type mv)))
+         (abs-mv (abs-vector mv))
+         (mv-type (move-type abs-mv)))
     (and (equal mv-type :composite)
-         ("TODO check that final contains nothing OR contains ennemy piece"))))
+         (or (is-coords-empty board final)
+             (is-coords-occupied-ennemy board final)))))
 
 (defclass king (piece)
   ((char-repr
@@ -160,14 +163,17 @@
 ;; TODO :before move method to check that it does NOT lead to a check mate condition
 (defmethod can-move ((object king) board init final)
   (let* ((mv (movement-vector init final))
-         ;; TODO use the abs value of vector 'cos otherwise it doesn't work at all
-         (dist (apply #'+ mv))
-         (mv-type (move-type mv)))
+         (abs-mv (abs-vector mv))
+         (dist (apply #'+ abs-mv))
+         (mv-type (move-type abs-mv)))
     (and (= dist 1)
          (or (equal mv-type :straight)
              (equal mv-type :diagonal))
-         ("check that it goes NOT on check")
-         (check-path object board inint final mv))))
+         ;; TODO check that it goes NOT on check
+         (check-path object board init final mv))))
+
+(defmethod is-king-check ((object king) board)
+  (print "TODO"))
 
 (defclass queen (piece)
   ((char-repr
@@ -177,12 +183,10 @@
 (defmethod can-move ((object queen) board init final)
   (let* ((mv (movement-vector init final))
          (abs-mv (abs-vector mv))
-         (dist (apply #'+ abs-mv))
          (mv-type (move-type abs-mv)))
     (and (or (equal mv-type :straight)
              (equal mv-type :diagonal))
-         ("check that it goes NOT on check")
-         (check-path object board inint final mv))))
+         (check-path object board init final mv))))
 
 (defun is-between (lower-bound upper-bound el)
   (and (>= el lower-bound)
@@ -204,11 +208,11 @@
 (defun abs-vector (el)
   (mapcar #'abs el))
 
-;; given move vector, will return the nature of the move among :
+;; given move vector (absed'), will return the nature of the move among :
 ;; :diagonal, :straight, :composite
-(defun move-type (mv)
-  (cond ((= (abs (first mv)) (abs (second mv))) :diagonal)
-        ((remove-if-not (lambda (el) (= el 0)) mv) :straight)
+(defun move-type (abs-mv)
+  (cond ((= (first abs-mv) (second abs-mv)) :diagonal)
+        ((remove-if-not (lambda (el) (= el 0)) abs-mv) :straight)
         (t :composite)))
 
 ;; filter out illegal move and lookup if the move can actually be done by
