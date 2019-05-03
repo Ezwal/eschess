@@ -17,8 +17,8 @@
 (defmethod print-object ((object piece) stream)
   (with-accessors ((color color)
                    (char-repr char-repr))
-        object
-      (format stream "~a" (rest (assoc color char-repr)))))
+      object
+    (format stream "~a" (rest (assoc color char-repr)))))
 
 ;; given the path, will check that actually no piece (ally OR ennemy)
 ;; lie on it until the actual target of the movement return nil if impossible
@@ -50,27 +50,29 @@
 ;; verify that the piece is actually moving forward corresponding to its color
 (defmethod is-forward-move ((object pawn) mv)
   (let ((pred (if (plusp (color object))
-                  'plusp 'minusp)))
-    (funcall pred (second mv))))
+                  'minusp 'plusp)))
+    (funcall pred (first mv))))
 
 (defmethod can-move ((object pawn) board init final)
   (let* ((mv (movement-vector init final))
-         (mv-type (move-type mv))
-         (dist (apply #'+ mv))
+         (abs-mv (abs-vector mv))
+         (mv-type (move-type abs-mv))
+         (max-mv (apply #'max abs-mv))
          (mv-charac (check-path object board init final mv)))
     ;; a pawn can ONLY move forward
+    (format t "~A ~A ~A ~A" mv mv-type max-mv mv-charac)
     (and (is-forward-move object mv)
          ;; prise-en-passant
          (or (and (equal mv-type :diagonal)
-                  (= dist 1)
+                  (= max-mv 1)
                   (equal mv-charac :capture))
              (and (equal mv-type :straight)
                   (equal mv-charac :move)
                   ;; first move can jump 2 tiles
-                  (or (and (= dist 2)
+                  (or (and (= max-mv 2)
                            (first-move object))
                       ;; normal move
-                      (= dist 1)))))))
+                      (= max-mv 1)))))))
 
 (defclass tower (piece)
   ((char-repr
@@ -79,7 +81,8 @@
 
 (defmethod can-move ((object tower) board init final)
   (let* ((mv (movement-vector init final))
-         (mv-type (move-type mv)))
+         (abs-mv (abs-vector mv))
+         (mv-type (move-type abs-mv)))
     (and (equal mv-type :straight)
          (check-path object board init final mv))))
 

@@ -4,9 +4,7 @@
 
 (defconstant WHITE 1)
 (defconstant BLACK -1)
-(defconstant EMPTY " ")
-
-(defun color-to-string (c) (if (= c WHITE) "white" "black"))
+(defconstant EMPTY "")
 
 (defun make-empty-chess-board ()
   (let ((s-w (make-spec-line WHITE))
@@ -24,8 +22,6 @@
   (loop :for p :in plist :collect (make-instance p :color color)))
 
 (defun make-pawn-line (color) (instance-pieces (repeat 8 'pawn) color))
-(defun make-spec-line (color) (instance-pieces '(tower knight fool queen king fool knight tower) color))
-
 ;; basic board manipulation
 (defun get-board-coords (board coords)
   (apply #'aref board coords))
@@ -39,7 +35,7 @@
 
 ;; basic piece verification
 (defun is-coords-empty (board coords)
-  (= EMPTY (get-board-coords board coords)))
+  (equal (get-board-coords board coords) EMPTY))
 (defun is-coords-occupied (board coords)
   (not (is-coords-empty board coords)))
 (defun is-coords-occupied-ennemy (board coords color)
