@@ -14,6 +14,9 @@
         (empty-line (repeat 8 EMPTY)))
     (make-array '(8 8) :initial-contents (list s-b p-b empty-line empty-line empty-line empty-line p-w s-w))))
 
+(defun make-pawn-line (color) (instance-pieces (repeat 8 'pawn) color))
+(defun make-spec-line (color) (instance-pieces '(tower knight fool queen king fool knight tower) color))
+
 (defun repeat (nb el)
   (loop :for i :from 1 :to nb :collect el))
 
@@ -32,6 +35,17 @@
     (set-board-coords board init EMPTY)
     (set-board-coords board final p)
     board))
+;; TODO trash the piece that get eaten if captured
+;; this func check that the actual piece is there AND that it can performs the move
+(defun move (board init final)
+  (let ((p (get-board-coords board init))) ;; check the sig of can-move it may be retarded
+    (if (and (not (equal EMPTY p))
+             (can-move p board init final))
+        (progn
+          (setf (first-move p) nil)
+          (move-piece board init final))
+        nil)))
+
 
 ;; basic piece verification
 (defun is-coords-empty (board coords)

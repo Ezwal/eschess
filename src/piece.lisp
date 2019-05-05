@@ -26,7 +26,8 @@
 (defmethod check-path ((object piece) board init final mv)
   (let* ((time (apply #'max (mapcar #'abs mv))) ;; needs to abs as mv can negative
          (step (divide-vector mv time)))
-    (and (every #'identity (loop :for i :from 1 :to (1- time)
+    (and (every #'identity
+                (loop :for i :from 1 :to (1- time)
                                  :collect (is-coords-empty board
                                                            (add-vector init (multiply-vector step i)))))
          (if (is-coords-empty board final)
@@ -35,12 +36,6 @@
                  :capture
                  ;; in this case a piece is here, not ennemy => illegal move
                  nil)))))
-
-(defmethod move ((object piece) board init final)
-  (if (can-move object board init final)
-      (progn (setf (first-move object) nil)
-             (move-piece board init final))
-      (error "can not move")))
 
 (defclass pawn (piece)
   ((char-repr
@@ -57,22 +52,22 @@
   (let* ((mv (movement-vector init final))
          (abs-mv (abs-vector mv))
          (mv-type (move-type abs-mv))
-         (max-mv (apply #'max abs-mv))
+         (mv-sum (apply #'+ abs-mv))
          (mv-charac (check-path object board init final mv)))
     ;; a pawn can ONLY move forward
-    (format t "~A ~A ~A ~A" mv mv-type max-mv mv-charac)
+    (format t "~A ~A ~A ~A" mv mv-type mv-sum mv-charac)
     (and (is-forward-move object mv)
          ;; prise-en-passant
          (or (and (equal mv-type :diagonal)
-                  (= max-mv 1)
+                  (= mv-sum 2)
                   (equal mv-charac :capture))
              (and (equal mv-type :straight)
                   (equal mv-charac :move)
                   ;; first move can jump 2 tiles
-                  (or (and (= max-mv 2)
+                  (or (and (= mv-sum 2)
                            (first-move object))
                       ;; normal move
-                      (= max-mv 1)))))))
+                      (= mv-sum 1)))))))
 
 (defclass tower (piece)
   ((char-repr
