@@ -24,7 +24,7 @@
 ;; lie on it until the actual target of the movement return nil if impossible
 ;; only to be used for diagonal or straight movement otherwise kittten dies
 (defmethod check-path ((object piece) board init final mv)
-  (let* ((time (apply #'max (mapcar #'abs mv))) ;; needs to abs as mv can negative
+  (let* ((time (apply #'max (abs-vector mv))) ;; needs to abs as mv can negative
          (step (divide-vector mv time)))
     (and (every #'identity
                 (loop :for i :from 1 :to (1- time)
@@ -104,7 +104,7 @@
          (mv-type (move-type abs-mv)))
     (and (equal mv-type :composite)
          (or (is-coords-empty board final)
-             (is-coords-occupied-ennemy board final)))))
+             (is-coords-occupied-ennemy board final (color object))))))
 
 (defclass king (piece)
   ((char-repr
