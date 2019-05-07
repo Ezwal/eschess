@@ -46,6 +46,10 @@
           (move-piece board init final))
         nil)))
 
+(defun is-capturable (board coords color)
+  (let ((opposing-color (* -1 color)))
+    (every piece filtered by opposing color should not be able to move to coords)))
+
 
 ;; basic piece verification
 (defun is-coords-empty (board coords)
