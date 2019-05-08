@@ -48,7 +48,7 @@
 
 (defun is-capturable (board coords color)
   (let ((opposing-color (* -1 color)))
-    (every piece filtered by opposing color should not be able to move to coords)))
+    (some #'identity filtered by opposing color should not be able to move to coords)))
 
 
 ;; basic piece verification
@@ -122,6 +122,12 @@
 ;;;;;;;;;;;;;
 
 ;; Helpers
+
+(defun range (n) (loop for x :from 0 :to (1- n) :collect x))
+(defun xrange (n)
+  (loop for x in (range n)
+        collect (loop for y in (range n)
+                      collect (list x y))))
 
 (defun repeat-character (n c)
   (concatenate 'string (repeat n c)))
