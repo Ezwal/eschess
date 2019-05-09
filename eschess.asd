@@ -6,7 +6,8 @@
   :components ((:module "src"
                 :components
                 ((:file "main")
-                 (:file "piece"))))
+                 (:file "piece")
+                 (:file "graphical"))))
   :description "Chess engine"
   :in-order-to ((test-op (test-op "eschess-project/tests"))))
 
