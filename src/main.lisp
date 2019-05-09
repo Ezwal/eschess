@@ -46,9 +46,17 @@
           (move-piece board init final))
         nil)))
 
-(defun is-capturable (board coords color)
-  (let ((opposing-color (* -1 color)))
-    (some #'identity filtered by opposing color should not be able to move to coords)))
+(defun is-capturable (board target-coords color);; TODO is it necessary to have color here ?
+  (let ((opposing-color (* -1 color))
+        (all-coords (xrange 8)))
+    ;; if any coords have a piece that CAN capture the target-coords
+    (some (lambda (coord)
+            (let ((p (get-board-coords board coord)))
+              (print coord)
+              (if (and (not (equal EMPTY p))
+                       (equal (color p) opposing-color))
+                  (can-move p board coord target-coords))))
+          all-coords)))
 
 
 ;; basic piece verification
@@ -125,9 +133,9 @@
 
 (defun range (n) (loop for x :from 0 :to (1- n) :collect x))
 (defun xrange (n)
-  (loop for x in (range n)
-        collect (loop for y in (range n)
-                      collect (list x y))))
+  (mapcan (lambda (x)
+            (loop :for y :from 0 :to (1- n) :collect (list x y)))
+          (range n)))
 
 (defun repeat-character (n c)
   (concatenate 'string (repeat n c)))
