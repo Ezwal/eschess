@@ -26,7 +26,7 @@
 (defmethod check-path ((object piece) board init final mv)
   (let* ((time (apply #'max (abs-vector mv))) ;; needs to abs as mv can negative
          (step (divide-vector mv time)))
-    (and (every #'identity
+    (ignore-errors (and (every #'identity
                 (loop :for i :from 1 :to (1- time)
                                  :collect (is-coords-empty board
                                                            (add-vector init (multiply-vector step i)))))
@@ -35,7 +35,7 @@
              (if (is-coords-occupied-ennemy board final (color object))
                  :capture
                  ;; in this case a piece is here, not ennemy => illegal move
-                 nil)))))
+                 nil))))))
 
 (defclass pawn (piece)
   ((char-repr
@@ -55,7 +55,7 @@
          (mv-sum (apply #'+ abs-mv))
          (mv-charac (check-path object board init final mv)))
     ;; a pawn can ONLY move forward
-    (format t "~A ~A ~A ~A" mv mv-type mv-sum mv-charac)
+    ;; (format t "~A ~A ~A ~A" mv mv-type mv-sum mv-charac)
     (and (is-forward-move object mv)
          ;; prise-en-passant
          (or (and (equal mv-type :diagonal)
@@ -101,8 +101,12 @@
 (defmethod can-move ((object knight) board init final)
   (let* ((mv (movement-vector init final))
          (abs-mv (abs-vector mv))
+         (dist (apply #'+ abs-mv))
+         (max-mv (apply #'max abs-mv))
          (mv-type (move-type abs-mv)))
     (and (equal mv-type :composite)
+         (equal dist 3)
+         (equal max-mv 2)
          (or (is-coords-empty board final)
              (is-coords-occupied-ennemy board final (color object))))))
 

@@ -49,10 +49,9 @@
 (defun is-capturable (board target-coords color);; TODO is it necessary to have color here ?
   (let ((opposing-color (* -1 color))
         (all-coords (xrange 8)))
-    ;; if any coords have a piece that CAN capture the target-coords
+    ;; if any coords have a piece that CAN capture the target-coords then its capturable
     (some (lambda (coord)
             (let ((p (get-board-coords board coord)))
-              (print coord)
               (if (and (not (equal EMPTY p))
                        (equal (color p) opposing-color))
                   (can-move p board coord target-coords))))
