@@ -45,12 +45,17 @@
     (remove-piece! board init)
     (set-board-coords! board final p)
     board))
+
 ;; this func check that the actual piece is there AND that it can performs the move!
+;; TODO check it is the right color that is invoked for the move
 (defun move! (board init final)
   (let ((p-init (get-board-coords board init)) ;; check the sig of can-move it may be retarded
         p-final (get-board-coords board final))
     (if (and (not (equal EMPTY p-init))
-             (can-move p-init board init final))
+             (can-move p-init board init final)
+             (in-bound? init-coords)
+             (in-bound? end-coords)
+             (not (equal init-coords end-coords)))
         (if (king-capturable? board (color p-init)) ;; checking if the move is actually acceptable before doing it
           (setf (first-move p-init) nil)
           (move-piece! board init final))
@@ -75,7 +80,8 @@
                                    (and (not (equal EMPTY p))
                                         (equal (type-of p) 'king)
                                         (equal (color p) color))))
-                               (xrange 8))) color))
+                               (xrange 8)))
+               color))
 
 ;; basic piece verification
 (defun coords-empty? (board coords)
@@ -88,10 +94,8 @@
 (defun between? (lower-bound upper-bound el)
   (and (>= el lower-bound)
        (<= el upper-bound)))
-(defun is-in-bound (coords)
+(defun in-bound? (coords)
   (every (lambda (el) (between? 0 7 el)) coords))
-(defun is-oob (coords)
-  (not (is-in-bound coords)))
 
 ;; Vector arithmetic
 (defun movement-vector (init end)
@@ -111,15 +115,6 @@
   (cond ((= (first abs-mv) (second abs-mv)) :diagonal)
         ((remove-if-not (lambda (el) (= el 0)) abs-mv) :straight)
         (t :composite)))
-
-;; filter out illegal move! and lookup if the move! can actually be done by
-;; the piece on the board TODO : add detection of who move! at the turn
-(defun move-if-allowed (board init-coords end-coords)
-  (if (or (is-oob init-coords)
-          (is-oob end-coords)
-          (equal init-coords end-coords))
-      nil
-      (print "TODO get the piece and invoke move! from it given the right arguments")))
 
 ;;;;;;;;;;;;;;;
 ;; INTERFACE ;;
