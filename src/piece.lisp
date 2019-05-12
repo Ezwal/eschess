@@ -28,11 +28,11 @@
          (step (divide-vector mv time)))
     (ignore-errors (and (every #'identity
                 (loop :for i :from 1 :to (1- time)
-                                 :collect (is-coords-empty board
+                                 :collect (coords-empty? board
                                                            (add-vector init (multiply-vector step i)))))
-         (if (is-coords-empty board final)
+         (if (coords-empty? board final)
              :move
-             (if (is-coords-occupied-ennemy board final (color object))
+             (if (coords-occupied-ennemy? board final (color object))
                  :capture
                  ;; in this case a piece is here, not ennemy => illegal move
                  nil))))))
@@ -43,7 +43,7 @@
     :accessor char-repr)))
 
 ;; verify that the piece is actually moving forward corresponding to its color
-(defmethod is-forward-move ((object pawn) mv)
+(defmethod forward-move? ((object pawn) mv)
   (let ((pred (if (plusp (color object))
                   'minusp 'plusp)))
     (funcall pred (first mv))))
@@ -56,7 +56,7 @@
          (mv-charac (check-path object board init final mv)))
     ;; a pawn can ONLY move forward
     ;; (format t "~A ~A ~A ~A" mv mv-type mv-sum mv-charac)
-    (and (is-forward-move object mv)
+    (and (forward-move? object mv)
          ;; prise-en-passant
          (or (and (equal mv-type :diagonal)
                   (= mv-sum 2)
@@ -107,15 +107,14 @@
     (and (equal mv-type :composite)
          (equal dist 3)
          (equal max-mv 2)
-         (or (is-coords-empty board final)
-             (is-coords-occupied-ennemy board final (color object))))))
+         (or (coords-empty? board final)
+             (coords-occupied-ennemy? board final (color object))))))
 
 (defclass king (piece)
   ((char-repr
     :initform (pairlis (list WHITE BLACK) '(#\♔ #\♚))
     :accessor char-repr)))
 
-;; TODO :before move method to check that it does NOT lead to a check mate condition
 (defmethod can-move ((object king) board init final)
   (let* ((mv (movement-vector init final))
          (abs-mv (abs-vector mv))
@@ -124,11 +123,7 @@
     (and (= dist 1)
          (or (equal mv-type :straight)
              (equal mv-type :diagonal))
-         ;; TODO check that it goes NOT on check
          (check-path object board init final mv))))
-
-(defmethod is-king-check ((object king) board)
-  (print "TODO"))
 
 (defclass queen (piece)
   ((char-repr

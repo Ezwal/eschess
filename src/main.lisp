@@ -34,25 +34,28 @@
 ;; basic board manipulation
 (defun get-board-coords (board coords)
   (apply #'aref board coords))
-(defun set-board-coords (board coords val)
+(defun set-board-coords! (board coords val)
   (setf (apply #'aref board coords) val))
-(defun move-piece (board init final)
-  (let ((p (get-board-coords board init)))
-    (set-board-coords board init EMPTY)
-    (set-board-coords board final p)
-    board))
+
 ;; TODO trash the piece that get eaten if captured
-;; this func check that the actual piece is there AND that it can performs the move
-(defun move (board init final)
+(defun remove-piece! (board coords)
+  (set-board-coords! board coords EMPTY))
+(defun move-piece! (board init final)
+  (let ((p (get-board-coords board init)))
+    (remove-piece! board init)
+    (set-board-coords! board final p)
+    board))
+;; this func check that the actual piece is there AND that it can performs the move!
+(defun move! (board init final)
   (let ((p (get-board-coords board init))) ;; check the sig of can-move it may be retarded
     (if (and (not (equal EMPTY p))
              (can-move p board init final))
         (progn
           (setf (first-move p) nil)
-          (move-piece board init final))
+          (move-piece! board init final))
         nil)))
 
-(defun is-capturable (board target-coords color);; TODO is it necessary to have color here ?
+(defun capturable? (board target-coords color);; TODO is it necessary to have color here ?
   (let ((opposing-color (* -1 color))
         (all-coords (xrange 8)))
     ;; if any coords have a piece that CAN capture the target-coords then its capturable
@@ -63,20 +66,29 @@
                   (can-move p board coord target-coords))))
           all-coords)))
 
+;; TODO factorize with above ??
+(defun king-capturable? (board color)
+  (capturable? board (first (remove-if-not
+                               (lambda (coord)
+                                 (let ((p (get-board-coords b coord)))
+                                   (and (not (equal EMPTY p))
+                                        (equal (type-of p) 'king)
+                                        (equal (color p) color))))
+                               (xrange 8))) color))
 
 ;; basic piece verification
-(defun is-coords-empty (board coords)
+(defun coords-empty? (board coords)
   (equal (get-board-coords board coords) EMPTY))
-(defun is-coords-occupied (board coords)
-  (not (is-coords-empty board coords)))
-(defun is-coords-occupied-ennemy (board coords color)
+(defun coords-occupied? (board coords)
+  (not (coords-empty? board coords)))
+(defun coords-occupied-ennemy? (board coords color)
   (not (= (color (get-board-coords board coords)) color)))
 
-(defun is-between (lower-bound upper-bound el)
+(defun between? (lower-bound upper-bound el)
   (and (>= el lower-bound)
        (<= el upper-bound)))
 (defun is-in-bound (coords)
-  (every (lambda (el) (is-between 0 7 el)) coords))
+  (every (lambda (el) (between? 0 7 el)) coords))
 (defun is-oob (coords)
   (not (is-in-bound coords)))
 
@@ -92,21 +104,21 @@
 (defun abs-vector (el)
   (mapcar #'abs el))
 
-;; given move vector (absed'), will return the nature of the move among :
+;; given move! vector (absed'), will return the nature of the move! among :
 ;; :diagonal, :straight, :composite
 (defun move-type (abs-mv)
   (cond ((= (first abs-mv) (second abs-mv)) :diagonal)
         ((remove-if-not (lambda (el) (= el 0)) abs-mv) :straight)
         (t :composite)))
 
-;; filter out illegal move and lookup if the move can actually be done by
-;; the piece on the board TODO : add detection of who move at the turn
+;; filter out illegal move! and lookup if the move! can actually be done by
+;; the piece on the board TODO : add detection of who move! at the turn
 (defun move-if-allowed (board init-coords end-coords)
   (if (or (is-oob init-coords)
           (is-oob end-coords)
           (equal init-coords end-coords))
       nil
-      (print "TODO get the piece and invoke move from it given the right arguments")))
+      (print "TODO get the piece and invoke move! from it given the right arguments")))
 
 ;;;;;;;;;;;;;;;
 ;; INTERFACE ;;
@@ -121,7 +133,7 @@
 
 (defun letter-coordinates (c)
   (let ((num (letter-to-number c)))
-    (and (is-between 0 7 num) num)))
+    (and (between? 0 7 num) num)))
 
 ; convert string like "A6" => '(0 6)
 (defun string-to-coordinates (s)
