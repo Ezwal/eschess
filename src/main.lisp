@@ -47,11 +47,12 @@
     board))
 ;; this func check that the actual piece is there AND that it can performs the move!
 (defun move! (board init final)
-  (let ((p (get-board-coords board init))) ;; check the sig of can-move it may be retarded
-    (if (and (not (equal EMPTY p))
-             (can-move p board init final))
-        (progn
-          (setf (first-move p) nil)
+  (let ((p-init (get-board-coords board init)) ;; check the sig of can-move it may be retarded
+        p-final (get-board-coords board final))
+    (if (and (not (equal EMPTY p-init))
+             (can-move p-init board init final))
+        (if (king-capturable? board (color p-init)) ;; checking if the move is actually acceptable before doing it
+          (setf (first-move p-init) nil)
           (move-piece! board init final))
         nil)))
 
