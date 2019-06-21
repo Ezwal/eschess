@@ -2,7 +2,7 @@
   :version "0.3.0"
   :author "Ezwal"
   :license ""
-  :depends-on ()
+  :depends-on ("alexandria" "cl-ppcre")
   :components ((:module "src"
                 :components
                 ((:file "main")

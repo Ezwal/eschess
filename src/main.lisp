@@ -72,7 +72,6 @@
                   (can-move p board coord target-coords))))
           all-coords)))
 
-;; TODO factorize with above ??
 (defun king-capturable? (board color)
   (capturable? board (first (remove-if-not
                                (lambda (coord)
@@ -82,6 +81,22 @@
                                         (equal (color p) color))))
                                (xrange 8)))
                color))
+
+(defun prompt-coords! (prompt-msg)
+  (format t prompt-msg)
+  (let ((from-user (read-line))
+        (scanner (ppcre:create-scanner "(\\d) (\\d)")))
+    (ppcre:scan scanner from-user)))
+
+;; just asks until the user input are actually valid
+(defun turn! (board color)
+  (loop
+    (let ((copy-board (alexandria:copy-array board)) ;; TODO change this ugly ass mutation
+          (move-init (prompt-coords! "Enter coords of piece to move: "))
+          (move-end (prompt-coords! "Enter destination of piece: "))) ;; scan the users for move order
+      (if (and (move! copy-board move-init move-end)
+               true) ;; TODO here adds the basic condition on move coords 
+          (return copy-board)))))
 
 ;; basic piece verification
 (defun coords-empty? (board coords)
