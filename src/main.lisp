@@ -50,7 +50,7 @@
 ;; TODO check it is the right color that is invoked for the move
 (defun move! (board init final)
   (let ((p-init (get-board-coords board init)) ;; check the sig of can-move it may be retarded
-        p-final (get-board-coords board final))
+        (p-final (get-board-coords board final)))
     (if (and (not (equal EMPTY p-init))
              (can-move p-init board init final)
              (in-bound? init-coords)
@@ -76,7 +76,7 @@
 (defun king-capturable? (board color)
   (capturable? board (first (remove-if-not
                                (lambda (coord)
-                                 (let ((p (get-board-coords b coord)))
+                                 (let ((p (get-board-coords board coord)))
                                    (and (not (equal EMPTY p))
                                         (equal (type-of p) 'king)
                                         (equal (color p) color))))
