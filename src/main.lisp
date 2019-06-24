@@ -82,11 +82,14 @@
                                (xrange 8)))
                color))
 
+(defun char-digit (c)
+  (let ((digit (- (char-code c) 48)))
+  (and (between? 0 9 digit) digit)))
 (defun prompt-coords! (prompt-msg)
   (format t prompt-msg)
-  (let ((from-user (read-line))
-        (scanner (ppcre:create-scanner "(\\d) (\\d)")))
-    (ppcre:scan scanner from-user)))
+  (let ((x (char-digit (read-char)))
+        (y (char-digit (read-char))))
+    (list x y)))
 
 ;; just asks until the user input are actually valid
 (defun turn! (board color)
@@ -95,7 +98,7 @@
           (move-init (prompt-coords! "Enter coords of piece to move: "))
           (move-end (prompt-coords! "Enter destination of piece: "))) ;; scan the users for move order
       (if (and (move! copy-board move-init move-end)
-               true) ;; TODO here adds the basic condition on move coords 
+               true) ;; TODO here adds the basic condition on move coords
           (return copy-board)))))
 
 ;; basic piece verification

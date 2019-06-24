@@ -1,5 +1,6 @@
 * Eschess
 
 ** Usage
-
-** Installation
+   
+   to test it out : compile asd file
+   and `ql:quickload :eschess`
