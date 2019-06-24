@@ -37,7 +37,6 @@
 (defun set-board-coords! (board coords val)
   (setf (apply #'aref board coords) val))
 
-;; TODO trash the piece that get eaten if captured
 (defun remove-piece! (board coords)
   (set-board-coords! board coords EMPTY))
 (defun move-piece! (board init final)
@@ -48,14 +47,15 @@
 
 ;; this func check that the actual piece is there AND that it can performs the move!
 ;; TODO check it is the right color that is invoked for the move
-(defun move! (board init final)
-  (let ((p-init (get-board-coords board init)) ;; check the sig of can-move it may be retarded
+(defun move! (board init final turn-color)
+  (let ((p-init (get-board-coords board init))
         (p-final (get-board-coords board final)))
     (if (and (not (equal EMPTY p-init))
              (can-move p-init board init final)
              (in-bound? init-coords)
              (in-bound? end-coords)
-             (not (equal init-coords end-coords)))
+             (not (equal init-coords end-coords))
+             (= (color p-init) turn-color))
         (if (king-capturable? board (color p-init)) ;; checking if the move is actually acceptable before doing it
           (setf (first-move p-init) nil)
           (move-piece! board init final))
@@ -92,13 +92,12 @@
     (list x y)))
 
 ;; just asks until the user input are actually valid
-(defun turn! (board color)
+(defun turn! (board turn-color)
   (loop
-    (let ((copy-board (alexandria:copy-array board)) ;; TODO change this ugly ass mutation
+    (let ((copy-board (alexandria:copy-array board)) ;; TODO change this ugly ass copy
           (move-init (prompt-coords! "Enter coords of piece to move: "))
           (move-end (prompt-coords! "Enter destination of piece: "))) ;; scan the users for move order
-      (if (and (move! copy-board move-init move-end)
-               true) ;; TODO here adds the basic condition on move coords
+      (if (move! copy-board move-init move-end turn-color)
           (return copy-board)))))
 
 ;; basic piece verification
