@@ -16,21 +16,12 @@
 
 (defun make-pawn-line (color) (instance-pieces (repeat 8 'pawn) color))
 (defun make-spec-line (color) (instance-pieces '(tower knight fool queen king fool knight tower) color))
-
-(defun repeat (nb el)
-  (loop :for i :from 1 :to nb :collect el))
-(defun range (n) (loop :for x :from 0 :to (1- n) :collect x))
-(defun xrange (n)
-  (mapcan (lambda (x)
-            (loop :for y :from 0 :to (1- n) :collect (list x y)))
-          (range n)))
-
+(defun make-pawn-line (color) (instance-pieces (repeat 8 'pawn) color))
 
 ;; given symbol list, will return a list of instance according to color
 (defun instance-pieces (plist color)
   (loop :for p :in plist :collect (make-instance p :color color)))
 
-(defun make-pawn-line (color) (instance-pieces (repeat 8 'pawn) color))
 ;; basic board manipulation
 (defun get-board-coords (board coords)
   (apply #'aref board coords))
@@ -82,15 +73,6 @@
                                (xrange 8)))
                color))
 
-(defun char-digit (c)
-  (let ((digit (- (char-code c) 48)))
-  (and (between? 0 9 digit) digit)))
-(defun prompt-coords! (prompt-msg)
-  (format t prompt-msg)
-  (let ((x (char-digit (read-char)))
-        (y (char-digit (read-char))))
-    (list x y)))
-
 ;; just asks until the user input are actually valid
 (defun turn! (board turn-color)
   (loop
@@ -114,18 +96,6 @@
 (defun in-bound? (coords)
   (every (lambda (el) (between? 0 7 el)) coords))
 
-;; Vector arithmetic
-(defun movement-vector (init end)
-  (mapcar #'- end init))
-(defun add-vector (coords vector)
-  (mapcar #'+ coords vector))
-(defun multiply-vector (vector multiplier)
-  (mapcar (lambda (el) (* el multiplier)) vector))
-(defun divide-vector (vector divider)
-  (mapcar (lambda (el) (/ el divider)) vector))
-(defun abs-vector (el)
-  (mapcar #'abs el))
-
 ;; given move! vector (absed'), will return the nature of the move! among :
 ;; :diagonal, :straight, :composite
 (defun move-type (abs-mv)
@@ -136,24 +106,6 @@
 ;;;;;;;;;;;;;;;
 ;; INTERFACE ;;
 ;;;;;;;;;;;;;;;
-
-(defun to-upper-case (c)
-  (character (format nil "~:(~a~)" c)))
-
-(defun letter-to-number (c)
-  (let ((A-value (char-code #\A)))
-    (- (char-code (to-upper-case c)) A-value)))
-
-(defun letter-coordinates (c)
-  (let ((num (letter-to-number c)))
-    (and (between? 0 7 num) num)))
-
-; convert string like "A6" => '(0 6)
-(defun string-to-coordinates (s)
-  (let* ((slist (coerce s 'list))
-         (x (first slist))
-         (y (second slist)))
-    (list (letter-coordinates x) (digit-char-p y))))
 
 (defun main ()
   (print "TODO"))
