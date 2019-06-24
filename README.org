@@ -4,3 +4,8 @@
    
    to test it out : compile asd file
    and `ql:quickload :eschess`
+
+** Meaning
+    
+   Used to lean common-lisp.
+   is a chess engine, no interface atm can works on a cl REPL
